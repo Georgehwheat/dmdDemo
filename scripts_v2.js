@@ -37,7 +37,7 @@ if(eventsContainer){
 // For second page
 const newsContainer = document.getElementById('news');
 if(newsContainer){
-    fetch("https://newsapi.org/v1/articles?source=bbc-news&apiKey=YOURKEY")
+    fetch("https://newsapi.org/v1/articles?source=bbc-news&apiKey=277ed27d1d504933add4195a6a390433")
         .then(response => {
             return response.json();
         }).then(news => {

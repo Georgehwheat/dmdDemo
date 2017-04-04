@@ -1,5 +1,8 @@
 var BASE_PATH = '/NAMEOF REPRO/';
 var CACHE_NAME = 'gih-cache-v6';
+var TEMP_IMAGE_CACHE_NAME = 'temp-cache-v1';
+var newsAPIJSON = "https://newsapi.org/v1/articles?source=bbc-news&apiKey=277ed27d1d504933add4195a6a390433";
+
 var CACHED_URLS = [
     // Our HTML
     BASE_PATH + 'first.html',
@@ -29,6 +32,10 @@ var CACHED_URLS = [
     BASE_PATH + 'appimages/event-default.png',
     BASE_PATH + 'scripts.js',
     BASE_PATH + 'events.json',
+    BASE_PATH + 'second.html',
+    BASE_PATH + 'appimages/jack.jpg',
+    BASE_PATH + 'appimages/news-default.jpg', 
+
 
      
     // JavaScript
@@ -69,12 +76,24 @@ self.addEventListener('fetch', function(event) {
         });
       })
     );
-    // Handle requests for events JSON file
+// Handle requests for events JSON file
   } else if (requestURL.pathname === BASE_PATH + 'events.json') {
     event.respondWith(
       caches.open(CACHE_NAME).then(function(cache) {
         return fetch(event.request).then(function(networkResponse) {
           cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        }).catch(function() {
+          return caches.match(event.request);
+        });
+      })
+    );
+  } else if (requestURL.href === newsAPIJSON) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(function(cache) {
+        return fetch(event.request).then(function(networkResponse) {
+          cache.put(event.request, networkResponse.clone());
+          caches.delete(TEMP_IMAGE_CACHE_NAME);
           return networkResponse;
         }).catch(function() {
           return caches.match(event.request);
@@ -95,17 +114,21 @@ self.addEventListener('fetch', function(event) {
         });
       })
     );
-
- // Handle requests for Google Maps JavaScript API file
-  } else if (requestURL.href === googleMapsAPIJS) {
+  // 
+  } else if (requestURL.href.includes('bbci.co.uk/news/')) {
     event.respondWith(
-      fetch(
-        googleMapsAPIJS+'&'+Date.now(),
-        { mode: 'no-cors', cache: 'no-store' }
-      ).catch(function() {
-        return caches.match('offline-map.js');
+      caches.open(TEMP_IMAGE_CACHE_NAME).then(function(cache) {
+        return cache.match(event.request).then(function(cacheResponse) {
+          return cacheResponse||fetch(event.request, {mode: 'no-cors'}).then(function(networkResponse) {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          }).catch(function() {
+            return cache.match('appimages/news-default.jpg');
+          });
+        });
       })
     );
+
   } else if (
     CACHED_URLS.includes(requestURL.href) ||
     CACHED_URLS.includes(requestURL.pathname)
