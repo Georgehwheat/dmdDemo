@@ -56,8 +56,6 @@ var CACHED_URLS = [
 
 var googleMapsAPIJS = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyA9zK1nIrIwPpXlX_gXgIiDIiE2WniXtyo&callback=initMap';
 
-
-
 self.addEventListener('install', function(event) {
   // Cache everything in CACHED_URLS. Installation fails if anything fails to cache
   event.waitUntil(
